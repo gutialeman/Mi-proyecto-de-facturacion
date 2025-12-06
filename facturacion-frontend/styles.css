@@ -1,0 +1,305 @@
+body {
+    background-color: #1a1a2e;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* -------------------------------------- */
+/* AJUSTES PARA EL FONDO DE VIDEO (LOGIN) */
+/* -------------------------------------- */
+#video-background-login {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -100;
+    background-size: cover;
+    filter: brightness(0.6); 
+}
+
+/* Ocultamos el canvas en el login */
+#interactive-background-login {
+    display: none !important;
+}
+
+/* -------------------------------------- */
+/* AJUSTES PARA EL CANVAS (FACTURACIÓN) */
+/* -------------------------------------- */
+#interactive-background {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    z-index: -200; 
+    background-color: #1a1a2e; 
+}
+
+/* -------------------------------------- */
+/* ESTILOS DE LOGIN (TARJETAS NEÓN Y TRANSICIÓN) */
+/* -------------------------------------- */
+.login-body-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative; 
+}
+
+.login-card {
+    /* Estilos Neón de la tarjeta */
+    background-color: rgba(26, 26, 46, 0.85); /* Fondo oscuro transparente */
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    /* Aplicamos la sombra base, que será manipulada por el JS */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 170, 255, 0.5); 
+    border: 1px solid rgba(0, 170, 255, 0.4); /* Borde azul neón */
+    backdrop-filter: blur(8px);
+    
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    position: absolute; 
+}
+
+.welcome-container, .login-form-visible {
+    opacity: 1;
+    transform: scale(1);
+    position: relative; 
+    max-width: 400px; 
+}
+
+/* Título de la bienvenida */
+.neon-text-welcome {
+    color: #fff; 
+    text-shadow:
+        0 0 5px #fff,
+        0 0 15px #00e5ff,
+        0 0 30px #00e5ff,
+        0 0 45px #00aaff,
+        0 0 60px #00aaff;
+    font-weight: 700;
+    font-size: 2.5em;
+    margin-bottom: 5px;
+}
+
+/* Título de "Acceso al Sistema" */
+.neon-text-title {
+    color: #00e5ff; 
+    border-bottom: 2px solid #00aaff; 
+    padding-bottom: 5px;
+    margin-bottom: 25px; 
+    font-size: 1.8em;
+    text-shadow: 0 0 5px rgba(0,229,255,0.5), 0 0 10px rgba(0,229,255,0.3);
+}
+
+/* Inputs de Login CORREGIDOS */
+.login-form-visible input[type="text"], 
+.login-form-visible input[type="password"] {
+    background-color: rgba(255, 255, 255, 0.08); /* Fondo transparente */
+    border: 1px solid #00aaff; /* Borde neón */
+    color: white; 
+    padding: 12px; 
+    border-radius: 6px; 
+    box-sizing: border-box;
+    width: 100%; /* << ESTO ASEGURA EL ANCHO COMPLETO PARA AMBOS CAMPOS */
+    font-size: 1.05em; 
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.login-form-visible input[type="text"]:focus, 
+.login-form-visible input[type="password"]:focus {
+    border-color: #00e5ff; 
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.4); 
+    outline: none;
+}
+
+/* Botón de Ingresar (Asegurando el estilo principal) */
+.login-form-visible .btn-primary {
+    background-color: #00aaff; /* Color azul */
+    box-shadow: 0 0 10px rgba(0, 170, 255, 0.5); /* Sombra neón */
+    color: white;
+    padding: 15px 30px; 
+    font-size: 1.1em;
+    min-width: 150px;
+    width: 100%; /* El botón debe ocupar el ancho completo del formulario */
+    margin-top: 20px;
+}
+
+/* -------------------------------------- */
+/* ESTILOS DE FACTURACIÓN (SE MANTIENEN INTACTOS) */
+/* -------------------------------------- */
+
+.app-header {
+    background-color: #1a1a2e;
+    color: white;
+    padding: 15px 50px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    border-bottom: 2px solid #00aaff; 
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.app-header .neon-text {
+    color: #00e5ff; 
+    text-shadow:
+        0 0 5px #00e5ff,
+        0 0 10px #00e5ff,
+        0 0 20px #00aaff;
+    font-weight: 700;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px 40px;
+}
+
+.section-title, .card h2 {
+    color: #00e5ff; 
+    border-bottom: 1px solid #00aaff; 
+    padding-bottom: 5px;
+    margin-bottom: 25px;
+    font-size: 1.5em;
+    text-shadow: 0 0 5px rgba(0,229,255,0.3);
+}
+
+.card {
+    background-color: rgba(26, 26, 46, 0.85); 
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #00aaff; 
+    box-shadow: 0 0 15px rgba(0, 170, 255, 0.3); 
+    backdrop-filter: blur(5px);
+}
+
+input[type="text"], 
+input[type="number"], 
+input[type="date"] {
+    background-color: rgba(255, 255, 255, 0.05); 
+    border: 1px solid #00aaff; 
+    color: white; 
+    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+input[type="text"]:focus, 
+input[type="number"]:focus, 
+input[type="date"]:focus {
+    border-color: #00e5ff; 
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.4); 
+    outline: none;
+}
+
+.grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.grid-4-col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    align-items: end; 
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.invoice-table thead tr {
+    background-color: #00aaff; 
+    color: black; 
+    text-shadow: none;
+}
+.btn {
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.btn-primary {
+    background-color: #00aaff;
+    box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+    color: white;
+    padding: 10px 20px;
+}
+
+.btn-primary:hover {
+    background-color: #00e5ff;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.7);
+}
+
+.btn-success {
+    background-color: #28a745; 
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    color: white;
+    padding: 10px 20px;
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 1.1em;
+    min-width: 150px;
+}
+
+.action-buttons {
+    text-align: right;
+    margin-top: 20px;
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 15px; 
+}
+.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    position: absolute; 
+}
+
+/* Totalmente funcional y listo para usar. */
+.invoice-summary{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 10px;
+}
+.btn btn-primary btn-large{
+      display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 20px;
+}
+.login-card welcome-container{
+       display: flex;
+     flex-direction: column;
+    align-items: flex-end;
+    margin-top: 20px;
+}
+    
+

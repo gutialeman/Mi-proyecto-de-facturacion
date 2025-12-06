@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturación - JAVISYNC</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <canvas id="interactive-background"></canvas>
+
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="neon-text">FACTURACIÓN JAVISYNC</h1>
+        </div>
+        <div>
+            <button id="logout-btn" class="btn btn-primary btn-large">Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <h1 class="section-title">Detalles de la Factura</h1>
+        
+        <!-- **************************************** -->
+        <!-- 1. DATOS DEL VENDEDOR -->
+        <!-- **************************************** -->
+        <div class="card mb-6"> 
+            <h2>Datos del Vendedor</h2>
+            <div class="grid-3-col-vendedor"> 
+                <div class="form-group">
+                    <label for="vendedorNombre">Vendedor (Nombre y Apellido):</label>
+                    <input type="text" id="vendedorNombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="vendedorCargo">Cargo / Puesto:</label>
+                    <input type="text" id="vendedorCargo" required>
+                </div>
+                <div class="form-group">
+                    <label for="vendedorHora">Hora:</label>
+                    <input type="text" id="vendedorHora" readonly class="locked-input">
+                </div>
+                <div class="form-group">
+                    <label for="empresaSesion">Empresa:</label>
+                    <input type="text" id="empresaSesion" readonly class="locked-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- **************************************** -->
+        <!-- 2. DATOS DEL CLIENTE Y FACTURA -->
+        <!-- **************************************** -->
+        <div class="grid-2-col">
+
+            <!-- Tarjeta de Datos del Cliente -->
+            <div class="card">
+                <h2>Datos del Cliente</h2>
+                <div class="form-group">
+                    <label for="nombreCliente">Nombre Completo:</label>
+                    <input type="text" id="nombreCliente" required>
+                </div>
+                <div class="form-group">
+                    <label for="identificacion">Identificación (RUC/Cédula):</label>
+                    <input type="text" id="identificacion" required>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Datos de la Factura -->
+            <div class="card">
+                <h2>Datos de la Factura</h2>
+                <div class="form-group">
+                    <label for="numFactura">Nº Factura:</label>
+                    <input type="text" id="numFactura" readonly class="locked-input">
+                </div>
+                <div class="form-group">
+                    <label for="fechaEmision">Fecha:</label>
+                    <input type="date" id="fechaEmision" required>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Productos -->
+        <div class="card product-input-section">
+            <h2>Agregar Producto</h2>
+            <div class="grid-4-col">
+                <div class="form-group">
+                    <label for="prodNombre">Descripción:</label>
+                    <input type="text" id="prodNombre">
+                </div>
+                <div class="form-group">
+                    <label for="prodCantidad">Cantidad:</label>
+                    <input type="number" id="prodCantidad" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="prodPrecio">Precio Unitario (C$):</label>
+                    <input type="number" id="prodPrecio" value="0.00" min="0.01" step="0.01">
+                </div>
+                <button id="add-product-btn" class="btn btn-success">Agregar</button> 
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Productos y Servicios</h2>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                        <th>P. Unitario</th>
+                        <th>Total</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody id="products-detail">
+                </tbody> 
+            </table>
+
+            <div class="invoice-summary">
+                <div class="summary-line">
+                    <span>Subtotal:</span>
+                    <span id="subtotal-val">C$0.00</span>
+                </div>
+                <div class="summary-line">
+                    <span>IVA (15%):</span>
+                    <span id="iva-val">C$0.00</span>
+                </div>
+                <div class="total-line">
+                    <span>TOTAL:</span>
+                    <span id="total-val">C$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button id="save-invoice-btn" class="btn btn-primary btn-large">Guardar Factura</button>
+            <button id="print-invoice-btn" class="btn btn-primary btn-large print-btn-style">Imprimir Factura</button> 
+        </div>
+
+        <p class="footer-note">Sistema de Facturación Digital Creado Por Javier Gutierrez - Versión Beta 1.0</p>
+
+    </div>
+    
+    <script src="canvas-background.js"></script>
+    <script src="app.js"></script> 
+</body>
+</html>
