@@ -140,7 +140,7 @@ body {
 }
 
 /* -------------------------------------- */
-/* ESTILOS DE FACTURACIÓN (SE MANTIENEN INTACTOS) */
+/* ESTILOS DE FACTURACIÓN 
 /* -------------------------------------- */
 
 .app-header {
@@ -301,5 +301,29 @@ input[type="date"]:focus {
     align-items: flex-end;
     margin-top: 20px;
 }
-    
+
+/* Contenedor del formulario (agrega esta clase al div que contiene tu formulario) */
+.form-container {
+    position: relative; /* Necesario para posicionar el enlace de manera absoluta */
+}
+
+/* Enlace olvidaste contraseña */
+.forgot-password-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; /* Lo alinea a la derecha */
+    margin-top: 01px;
+    margin-bottom: 01px;
+}
+
+.forgot-password-link {
+    color: #00d2ff; /* Color acorde a tu tema */
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.forgot-password-link:hover {
+    text-shadow: 0 0 10px #00d2ff; /* Efecto neón al pasar el mouse */
+}
 

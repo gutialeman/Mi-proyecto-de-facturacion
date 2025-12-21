@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JaviSync - Acceso al Sistema</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+
+<canvas id="interactive-background-login"></canvas>
+<video autoplay muted loop id="video-background-login">
+    <source src="login_background.mp4" type="video/mp4">
+    Tu navegador no soporta el tag de video.
+</video>
+
+<div class="login-body-content">
+
+    <!-- Tarjeta de Registro -->
+    <div id="register-container" class="login-card hidden login-form-visible">
+        <h2 class="neon-text-title">Crear Cuenta</h2>
+        <form id="register-form">
+            <div class="form-group">
+                <label for="reg-name">Nombre de la Empresa:</label>
+                <input type="text" id="reg-name" required>
+            </div>
+
+            <!-- Contraseña con Toggle de Visibilidad -->
+            <div class="form-group">
+                <label for="reg-pass">Contraseña:</label>
+                <div class="password-group">
+                    <input type="password" id="reg-pass" required>
+                    <!-- El data-target indica a qué input afecta el ojo -->
+                    <span class="toggle-password" data-target="reg-pass">👁️</span>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-large">Registrar</button>
+            <!-- Botón para volver a la pantalla de bienvenida -->
+            <button type="button" id="close-register" class="btn btn-primary btn-large" style="margin-top: 15px;" onclick="irAtras()">Cancelar</button>
+        </form>
+    </div>
+
+    <!-- Tarjeta de Bienvenida -->
+    <div id="welcome-screen" class="login-card welcome-container">
+        <h1 class="neon-text-welcome">Bienvenido a JaviSync</h1>
+        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 30px;">Un sistema de Facturación Digital</p>
+        <button id="show-login-btn" class="btn btn-primary btn-large">Iniciar Sesión</button>
+        <button id="show-register-btn" class="btn btn-primary btn-large">Registrarse</button>
+    </div>
+
+    <!-- Tarjeta de Login -->
+    <div id="login-container" class="login-card hidden login-form-visible">
+        <h2 class="neon-text-title">Acceso al Sistema</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" required>
+            </div>
+
+            <!-- Contraseña con Toggle de Visibilidad -->
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <div class="password-group">
+                    <input type="password" id="password" required>
+                    <!-- El data-target indica a qué input afecta el ojo -->
+                    <span class="toggle-password" data-target="password">👁️</span>
+                </div>
+            </div>
+            
+            <!-- Enlace de Olvidaste Contraseña (NUEVO) -->
+            <div class="forgot-password-container">
+               <a href="recuperar.html" class="forgot-password-link">¿Olvidaste tu contraseña?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large">Ingresar</button>
+            <p id="login-error" style="color: red; margin-top: 15px; display: none;"></p>
+
+            <!-- Botón para volver a la pantalla de bienvenida -->
+            <button type="button" class="btn btn-primary btn-large" onclick="irAtras()"> ATRÁS </button>
+        </form>
+    </div>
+
+</div>
+
+<!-- Botón de Ajustes -->
+<button id="settings-btn" class="btn btn-primary btn-large">⚙ Ajustes</button>
+
+<!-- Menú de Ajustes -->
+<div id="settings-menu">
+    <button id="info-btn">Información</button>
+    <button id="toggle-theme-btn">Cambiar Modo</button>
+</div>
+
+<!-- Modal de información (Clase 'modal' añadida) -->
+<div id="info-modal" class="modal">
+    <div class="modal-content">
+        <button class="close-modal">&times;</button>
+        <h2>Acerca de JaviSync</h2>
+        <p>
+            JaviSync es un sistema de facturación digital diseñado para resolver las problemáticas que sufren actualmente las pequeñas empresas o negocios los cuales no cuentan con un sistema de facturación para sus productos y clientes. 
+            JaviSync es fácil y rápida al momento de generar una factura, además está diseñado para generar facturas con un diseño profesional. 
+            Gracias por usar JaviSync: "Generemos Facturas Juntos".
+        </p>
+        <div class="modal-footer">
+            Creado por Javier Gutierrez
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Recuperación de Contraseña-->
+<div id="recovery-modal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <button class="close-modal recovery-close-btn">&times;</button>
+        <h2 class="neon-text-title" style="text-align: center;">Recuperar Contraseña</h2>
+        <p style="color: rgba(255, 255, 255, 0.7); text-align: center; margin-bottom: 20px;">
+            Introduce tu usuario o email para enviar el enlace de recuperación.
+        </p>
+        <form id="recovery-form">
+            <div class="form-group">
+                <label for="recovery-user">Usuario / Email:</label>
+                <input type="text" id="recovery-user" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 15px;">Enviar Enlace</button>
+            <p id="recovery-message" style="color: #ff4d4d; margin-top: 15px; text-align: center; display: none;"></p>
+        </form>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+    // --- Lógica de Transición de Pantallas ---
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const loginContainer = document.getElementById('login-container');
+    const registerContainer = document.getElementById('register-container');
+    const showLoginBtn = document.getElementById('show-login-btn');
+    const showRegisterBtn = document.getElementById('show-register-btn');
+
+    // Función que muestra una tarjeta y oculta las demás
+    function showCard(targetId) {
+        [welcomeScreen, loginContainer, registerContainer].forEach(card => {
+            if (card) card.classList.add('hidden');
+        });
+        
+        setTimeout(() => {
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) targetElement.classList.remove('hidden');
+        }, 10); // Un pequeño delay para la transición visual
+    }
+
+    // Navegar a Login
+    showLoginBtn.addEventListener('click', () => {
+        showCard('login-container');
+    });
+
+    // Navegar a Registro
+    showRegisterBtn.addEventListener('click', () => {
+        showCard('register-container');
+    });
+
+    // Volver a la pantalla de bienvenida
+    function irAtras() {
+        showCard('welcome-screen');
+    }
+
+    // --- Lógica de Contraseña (Toggle) ---
+    function togglePassword(event) {
+        // Obtenemos el input al que afecta el ojo (basado en el atributo data-target)
+        const targetId = event.target.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+
+        if (input) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                event.target.textContent = '🙈'; // Ocultar
+            } else {
+                input.type = 'password';
+                event.target.textContent = '👁️'; // Mostrar
+            }
+        }
+    }
+    
+    // Asignar el listener de toggle a todos los iconos de ojo
+    document.querySelectorAll('.toggle-password').forEach(span => {
+        span.addEventListener('click', togglePassword);
+    });
+
+    // --- Lógica de Ajustes y Modales ---
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsMenu = document.getElementById('settings-menu');
+    const infoBtn = document.getElementById('info-btn');
+    const infoModal = document.getElementById('info-modal');
+    const closeModal = infoModal.querySelector('.close-modal');
+    const toggleThemeBtn = document.getElementById('toggle-theme-btn');
+    
+    // Modal de Recuperación
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    const recoveryModal = document.getElementById('recovery-modal');
+    const recoveryCloseBtn = recoveryModal.querySelector('.recovery-close-btn');
+
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+    });
+    
+    // Cierra el menú al hacer clic fuera
+    window.addEventListener('click', () => {
+        settingsMenu.style.display = 'none';
+    });
+    settingsMenu.addEventListener('click', (e) => e.stopPropagation()); // Previene que el menú se cierre al hacer clic dentro
+
+    // Botón Información
+    infoBtn.addEventListener('click', () => {
+        infoModal.style.display = 'flex';
+        settingsMenu.style.display = 'none';
+    });
+
+    closeModal.addEventListener('click', () => {
+        infoModal.style.display = 'none';
+    });
+
+    infoModal.addEventListener('click', (e) => {
+        if (e.target === infoModal) infoModal.style.display = 'none';
+    });
+
+    // Toggle Modo Oscuro/Claro
+    toggleThemeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        settingsMenu.style.display = 'none';
+    });
+    
+    // --- Lógica del Modal de Recuperación (NUEVO) ---
+    forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        recoveryModal.style.display = 'flex';
+    });
+    
+    recoveryCloseBtn.addEventListener('click', () => {
+        recoveryModal.style.display = 'none';
+    });
+    
+    recoveryModal.addEventListener('click', (e) => {
+        if (e.target === recoveryModal) recoveryModal.style.display = 'none';
+    });
+    
+    // Simulación del Formulario de Recuperación
+    const recoveryForm = document.getElementById('recovery-form');
+    const recoveryMessage = document.getElementById('recovery-message');
+    
+    recoveryForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        recoveryMessage.style.display = 'block';
+        recoveryMessage.style.color = '#00ff00';
+        recoveryMessage.textContent = 'Enlace de recuperación enviado.';
+        
+        setTimeout(() => {
+            recoveryModal.style.display = 'none';
+            recoveryForm.reset();
+            recoveryMessage.style.display = 'none';
+        }, 3000);
+    });
+    
+    // Simulación de Login (para evitar errores en la consola)
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const errorDiv = document.getElementById('login-error');
+        errorDiv.textContent = "Simulación: Intento de ingreso. (Usuario: admin, Pass: 1234)";
+        errorDiv.style.color = '#00c6ff';
+        errorDiv.style.display = 'block';
+    });
+    
+</script>
+</body>
+</html>

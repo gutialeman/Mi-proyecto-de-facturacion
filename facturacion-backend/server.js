@@ -1,137 +1,166 @@
-// Importación de módulos necesarios
+// -----------------------------------------------------------
+// Dependencias
+// -----------------------------------------------------------
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
+const { log } = require('console');
 
 const app = express();
 const PORT = 3000;
-const SALT_ROUNDS = 10;
+const saltRounds = 10; // Para el hashing de contraseñas
 
-// ************************************************
-// 1. CONFIGURACIÓN DEL MIDDLEWARE
-// ************************************************
-
-// Habilita CORS para permitir que el frontend (Live Server) se conecte
-app.use(cors({
-    origin: 'http://127.0.0.1:5500',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
-}));
-
-// Middleware para parsear JSON
-app.use(express.json());
-
-// ************************************************
-// 2. CONFIGURACIÓN DE LA BASE DE DATOS
-// ************************************************
-
-const db = new sqlite3.Database('./SQLite.db', (err) => {
-    console.log("Usando base de datos:", require("path").resolve("./SQLite.db"));
-
+// -----------------------------------------------------------
+// Configuración de la Base de Datos
+// -----------------------------------------------------------
+// Abre la base de datos de forma síncrona
+const db = new sqlite3.Database('SQLite.db', (err) => {
     if (err) {
         console.error('Error al abrir la base de datos:', err.message);
     } else {
-        console.log('Conectado a la base de datos SQLite.');
-
-        // Crear la tabla si no existe
-        db.run(`
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nombre TEXT NOT NULL UNIQUE,
-                contraseña_hash TEXT NOT NULL
-            )
-        `, (err) => {
+        console.log('Conectado a la base de datos SQLite.db.');
+        
+        // ** CREACIÓN DE LA TABLA DE USUARIOS (EMPRESAS) **
+        // Aseguramos que la tabla 'empresas' exista con las columnas requeridas
+        db.run(`CREATE TABLE IF NOT EXISTS empresas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre_empresa TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL
+        )`, (err) => {
             if (err) {
-                console.error("Error al crear la tabla de usuarios:", err.message);
+                console.error("Error al crear la tabla 'empresas':", err.message);
             } else {
-                console.log("Tabla 'usuarios' verificada o creada correctamente.");
+                console.log("Tabla 'empresas' asegurada (creada si no existía).");
             }
         });
     }
 });
 
-// ************************************************
-// 3. RUTAS DE LA API
-// ************************************************
+// -----------------------------------------------------------
+// Middlewares
+// -----------------------------------------------------------
 
-// REGISTRO
-app.post('/registrar', async (req, res) => {
-    const { nombre, contraseña } = req.body;
+// Configuración CORS - AJUSTAR PARA PRODUCCIÓN
+// NOTA: Usar '*' solo para desarrollo. Cambiar a la URL específica del frontend en producción (ej. 'https://mi-facturacion.com')
+app.use(cors({
+    origin: '*', 
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true
+}));
 
-    if (!nombre || !contraseña) {
-        return res.status(400).json({ error: 'Faltan nombre de empresa o contraseña.' });
+app.use(express.json()); // Para parsear el body de las peticiones JSON
+
+// -----------------------------------------------------------
+// Rutas de Autenticación
+// -----------------------------------------------------------
+
+// 1. Ruta de REGISTRO (Crear Nueva Empresa)
+app.post('/api/register', async (req, res) => {
+    const { nombre_empresa, password } = req.body;
+
+    // Validación básica de datos
+    if (!nombre_empresa || !password) {
+        return res.status(400).json({ error: 'Faltan datos de empresa o contraseña.' });
     }
 
     try {
-        const contraseña_hash = await bcrypt.hash(contraseña, SALT_ROUNDS);
+        // 1. Verificar si la empresa ya existe
+        db.get('SELECT nombre_empresa FROM empresas WHERE nombre_empresa = ?', [nombre_empresa], async (err, row) => {
+            if (err) {
+                // Error de la base de datos
+                console.error("Error al verificar existencia de empresa:", err.message);
+                return res.status(500).json({ error: 'Error interno del servidor al verificar la empresa.' });
+            }
+            
+            if (row) {
+                // La empresa ya existe
+                return res.status(409).json({ error: 'La empresa con ese nombre ya está registrada.' });
+            }
 
-        db.run(
-            'INSERT INTO usuarios (nombre, contraseña_hash) VALUES (?, ?)',
-            [nombre, contraseña_hash],
-            function(err) {
+            // 2. Hashear la contraseña
+            const password_hash = await bcrypt.hash(password, saltRounds);
+
+            // 3. Insertar nuevo usuario
+            db.run('INSERT INTO empresas (nombre_empresa, password_hash) VALUES (?, ?)', 
+                [nombre_empresa, password_hash], 
+                function(err) {
                 if (err) {
-                    if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.status(409).json({ error: 'El nombre de empresa ya está registrado.' });
-                    }
-                    console.error("Error en el registro:", err.message);
+                    // Este error capturará problemas como UNIQUE constraint fallido (aunque ya lo verificamos) o problemas de esquema.
+                    console.error("Error al insertar nueva empresa:", err.message);
                     return res.status(500).json({ error: 'Error interno del servidor al registrar.' });
                 }
-
-                res.status(201).json({
-                    mensaje: 'Usuario registrado con éxito',
-                    id: this.lastID
+                
+                // Registro exitoso
+                res.status(201).json({ 
+                    message: 'Empresa registrada con éxito!', 
+                    id: this.lastID,
+                    nombre_empresa: nombre_empresa
                 });
-            }
-        );
+            });
+        });
+
     } catch (error) {
-        console.error("Error de hasheo:", error);
-        res.status(500).json({ error: 'Error interno del servidor.' });
+        // Error general (ej. falla en bcrypt)
+        console.error('Error general en el registro:', error);
+        res.status(500).json({ error: 'Error interno inesperado.' });
     }
 });
 
-// LOGIN
-app.post('/iniciar-sesion', (req, res) => {
-    const { nombre, contraseña } = req.body;
+// 2. Ruta de LOGIN (Autenticar Empresa)
+app.post('/api/login', (req, res) => {
+    const { nombre_empresa, password } = req.body;
 
-    if (!nombre || !contraseña) {
-        return res.status(400).json({ error: 'Faltan usuario o contraseña.' });
+    if (!nombre_empresa || !password) {
+        return res.status(400).json({ error: 'Faltan datos de empresa o contraseña.' });
     }
 
-    db.get('SELECT * FROM usuarios WHERE nombre = ?', [nombre], async (err, user) => {
+    db.get('SELECT password_hash FROM empresas WHERE nombre_empresa = ?', [nombre_empresa], async (err, row) => {
         if (err) {
-            console.error("Error en la consulta:", err.message);
+            console.error("Error al buscar empresa en login:", err.message);
             return res.status(500).json({ error: 'Error interno del servidor.' });
         }
 
-        if (!user) {
-            return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
+        if (!row) {
+            // Empresa no encontrada
+            return res.status(401).json({ error: 'Empresa o contraseña incorrecta.' });
         }
 
-        try {
-            const match = await bcrypt.compare(contraseña, user.contraseña_hash);
+        // Comparar la contraseña hasheada
+        const match = await bcrypt.compare(password, row.password_hash);
 
-            if (match) {
-                res.status(200).json({
-                    mensaje: 'Inicio de sesión exitoso',
-                    nombre: user.nombre
-                });
-            } else {
-                res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
-            }
-        } catch (error) {
-            console.error("Error al comparar contraseñas:", error);
-            res.status(500).json({ error: 'Error interno del servidor.' });
+        if (match) {
+            // Contraseña correcta
+            res.status(200).json({ 
+                message: 'Login exitoso', 
+                nombre_empresa: nombre_empresa,
+                // En una app real, aquí se generaría un JWT (JSON Web Token)
+            });
+        } else {
+            // Contraseña incorrecta
+            res.status(401).json({ error: 'Empresa o contraseña incorrecta.' });
         }
     });
 });
 
-// ************************************************
-// 4. INICIO DEL SERVIDOR
-// ************************************************
-
+// -----------------------------------------------------------
+// Inicio del Servidor
+// -----------------------------------------------------------
 app.listen(PORT, () => {
-    console.log(`\nServidor backend corriendo en: http://localhost:${PORT}`);
-    console.log('Frontend debe correr en Live Server (http://127.0.0.1:5500)');
+    console.log(`Servidor backend corriendo en: http://localhost:${PORT}`);
+    console.log(`Rutas disponibles: /api/register (POST) y /api/login (POST)`);
+});
+
+// -----------------------------------------------------------
+// Cierre Elegante de la Base de Datos
+// -----------------------------------------------------------
+process.on('SIGINT', () => {
+    db.close((err) => {
+        if (err) {
+            console.error(err.message);
+        }
+        console.log('\nConexión a la base de datos cerrada. Servidor apagado.');
+        process.exit(0);
+    });
 });
 
